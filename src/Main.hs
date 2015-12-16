@@ -41,6 +41,7 @@ handleEvent twInfo mgr status = case status of
     SStatus s -> do
         liftIO $ putStrLn ("[tweet] " ++ show (statusText s))
         let username = Text.unpack (userScreenName (statusUser s))
+        -- TODO should read the authenticated user's name
         when (username /= "haskellbr2") $ do
             liftIO $ putStrLn ("[follow] Following " ++ username)
             void $ call twInfo mgr (friendshipsCreate (ScreenNameParam username))

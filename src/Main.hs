@@ -2,7 +2,7 @@
 module Main where
 
 import           Control.Lens
-import           Control.Monad                (void)
+import           Control.Monad                (void, when)
 import           Control.Monad.IO.Class
 import           Control.Monad.Trans.Resource
 import qualified Data.ByteString.Char8        as ByteString (pack)
@@ -34,14 +34,17 @@ main = withSocketsDo $ do
     runResourceT $ do
         haskellersStream <- stream twInfo mgr
             (statusesFilterByTrack track & language .~ Just "pt")
-        haskellersStream $$+- Conduit.List.mapM_ $ \status ->
-            case status of
-                SStatus s -> do
-                    liftIO $ putStrLn ("[tweet] " ++ show (statusText s))
-                    let username = Text.unpack (userScreenName (statusUser s))
-                    liftIO $ putStrLn ("[follow] Following " ++ username)
-                    void $ call twInfo mgr (friendshipsCreate (ScreenNameParam username))
-                _ -> return ()
+        haskellersStream $$+- Conduit.List.mapM_ (handleEvent twInfo mgr)
+
+handleEvent :: MonadResource m => TWInfo -> Manager -> StreamingAPI -> m ()
+handleEvent twInfo mgr status = case status of
+    SStatus s -> do
+        liftIO $ putStrLn ("[tweet] " ++ show (statusText s))
+        let username = Text.unpack (userScreenName (statusUser s))
+        when (username /= "haskellbr2") $ do
+            liftIO $ putStrLn ("[follow] Following " ++ username)
+            void $ call twInfo mgr (friendshipsCreate (ScreenNameParam username))
+    _ -> return ()
 
 twitterInfoFromEnv :: IO TWInfo
 twitterInfoFromEnv = do

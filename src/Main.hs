@@ -1,6 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Main where
 
+import           Control.Exception
 import           Control.Lens
 import           Control.Monad                (void, when)
 import           Control.Monad.IO.Class
@@ -27,14 +28,19 @@ track = Text.pack $ join "," [
     "linguagem elixir", "erlang" ]
 
 main :: IO ()
-main = withSocketsDo $ do
-    mgr <- newManager tlsManagerSettings
-    twInfo <- twitterInfoFromEnv
-
-    runResourceT $ do
-        haskellersStream <- stream twInfo mgr
-            (statusesFilterByTrack track & language .~ Just "pt")
-        haskellersStream $$+- Conduit.List.mapM_ (handleEvent twInfo mgr)
+main = start `catch` \(SomeException e) -> do
+    liftIO $ putStrLn ("[error] " ++ show e)
+    start
+  where
+    start = withSocketsDo $ do
+        mgr <- newManager tlsManagerSettings
+        twInfo <- twitterInfoFromEnv
+        runResourceT $ do
+            haskellersStream <- stream twInfo mgr
+                (statusesFilterByTrack track & language .~ Just "pt")
+            liftIO $ putStrLn $ "[info] Started listening to tweets with: " ++
+                Text.unpack track
+            haskellersStream $$+- Conduit.List.mapM_ (handleEvent twInfo mgr)
 
 handleEvent :: MonadResource m => TWInfo -> Manager -> StreamingAPI -> m ()
 handleEvent twInfo mgr status = case status of
@@ -44,7 +50,7 @@ handleEvent twInfo mgr status = case status of
         -- TODO should read the authenticated user's name
         when (username /= "haskellbr2") $ do
             liftIO $ putStrLn ("[follow] Following " ++ username)
-            void $ call twInfo mgr (friendshipsCreate (ScreenNameParam username))
+            void (call twInfo mgr (friendshipsCreate (ScreenNameParam username)))
     _ -> return ()
 
 twitterInfoFromEnv :: IO TWInfo

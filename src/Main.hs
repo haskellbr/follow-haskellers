@@ -31,7 +31,7 @@ track = Text.pack $ join "," [
 main :: IO ()
 main = start `catch` \(SomeException e) -> do
     liftIO $ putStrLn ("[error] " ++ show e)
-    start
+    main
   where
     start = withSocketsDo $ do
         mgr <- newManager tlsManagerSettings

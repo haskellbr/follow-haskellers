@@ -1,0 +1,48 @@
+# Use new container infrastructure to enable caching
+sudo: false
+
+# Choose a lightweight base image; we provide our own build tools.
+language: c
+
+# GHC depends on GMP. You can add other dependencies here as well.
+addons:
+  apt:
+    packages:
+    - libgmp-dev
+
+before_install:
+# Download and unpack the stack executable
+- mkdir -p ~/.local/bin
+- export PATH=$HOME/.local/bin:$PATH
+- travis_retry curl -L https://www.stackage.org/stack/linux-x86_64 | tar xz --wildcards --strip-components=1 -C ~/.local/bin '*/stack'
+
+# This line does all of the work: installs GHC if necessary, build the library,
+# executables, and test suites, and runs the test suites. --no-terminal works
+# around some quirks in Travis's terminal implementation.
+script:
+- stack --no-terminal --install-ghc test
+
+# Prepare the upload to S3
+- mkdir -p to-travis
+- cp $(stack exec which follow-haskellers) to-travis
+- bzip2 to-travis/follow-haskellers
+
+# Caching so the next build will be fast too.
+cache:
+  directories:
+  - $HOME/.stack
+
+# Upload the resulting executable to S3
+deploy:
+  provider: s3
+  access_key_id: "AKIAJP7VW4B2IVAP5X4Q"
+  secret_access_key:
+    secure: "N5sFFTq2jrfvnxlTld4tvg5il2e74Zpuc98zGp++ouno18t36U+os8uG3l1kJdKjrqdNuyT+spngBePGQs6eN1CiGj5Yb2GLdc6V07A2z+lryxW4budsRl2PiBHoZzAHvR/T/VM48/MZZMkk7mdPEZ3ZNwl23az7rvXFoYjoeFbqnhYE0HI6xz5pe2v89/JVgayy2o6pjUhEfIr/Fu8YQVBHm5nUUn4Fty4neYqVyq5wnxbUs/85tQWQ9lMRWh5eTJ4LJB6LcxxBiu4/C6UC33HSfIl/tBw1QE+kNDZEU0DQuc0ZWXoQrjKYxxdTVkxsiVNU4xuwLDp6yuX+DMtc6W7Jfw3X+6Zsdwzx+LCwfhM4emlGoVdq+e/Yrokiybi9+9zQCK8cA6lpMDCrohYujS0MMnzCCrG/Gdb+v5kYSobF2Tk+8WKh57W9PKVA8ZBxP9/H53bBiCAW3OZ9wNkrgBrRL+Y3CvPAwSrMsF1EWpAzPvQ9b7TS/Q0Bi7hzi61ZOPDzjuebdER2q5xMWSkZbevnYugcRDsOeomjpYfxtEM64lNrreHBFZ3rOPPZUYVEiiuQ1vCsHa/SmUCpkNTJ41gSKUagdt6XGiscEofV0j1MMb6hSbE80lLSjy2tQbjLXcNyKYDzq4ET62+k5qBmcYgtWZ1PBnQpF8KEjllI6Bg="
+  bucket: haskellbr.com
+  acl: public_read
+  skip_cleanup: true
+  local_dir: to-travis
+  upload-dir: follow-haskellers
+  on:
+    repo: haskellbr/follow-haskellers
+    branch: master

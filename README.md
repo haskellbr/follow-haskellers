@@ -1,5 +1,6 @@
 # follow-haskellers
 [![Build Status](https://travis-ci.org/haskellbr/follow-haskellers.svg?branch=master)](https://travis-ci.org/haskellbr/follow-haskellers)
+[![Docker Pulls](https://img.shields.io/docker/pulls/haskellbr/follow-haskellers.svg)](https://hub.docker.com/r/haskellbr/follow-haskellers/)
 - - -
 Follow potential Haskellers on Twitter.
 

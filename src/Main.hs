@@ -14,7 +14,6 @@ import           Data.List.Utils
 import           Data.Monoid
 import           Data.Text                    (Text)
 import qualified Data.Text                    as Text
-import qualified Data.Text.IO                 as Text
 import           Network
 import           Network.HTTP.Conduit
 import           System.Environment
@@ -40,8 +39,7 @@ main = start `catch` \(SomeException e) -> do
         runResourceT $ do
             haskellersStream <- stream twInfo mgr
                 (statusesFilterByTrack track & language .~ Just "pt")
-            liftIO $ Text.putStrLn $ "[info] Started listening to tweets with: " <>
-                track
+            liftIO $ putStrLn $ "[info] Started listening to tweets with"
             haskellersStream $$+- Conduit.List.mapM_ (handleEvent twInfo mgr)
 
 handleEvent :: MonadResource m => TWInfo -> Manager -> StreamingAPI -> m ()

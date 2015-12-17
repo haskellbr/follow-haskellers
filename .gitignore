@@ -21,3 +21,4 @@ cabal.sandbox.config
 
 .envrc
 stack.yaml
+follow-haskellers

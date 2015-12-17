@@ -12,8 +12,8 @@ $ follow-haskellers
 
 ## Binary distribution
 The Travis CI service builds this repository on every commit and uploads
-produced binaries to Amazon S3. You can download a Linux 64-bit static binary
-for this application from
+produced binaries to Amazon S3. You can download a compressed Linux 64-bit
+static binary for this application from
 [here](http://haskellbr.com.s3-website-sa-east-1.amazonaws.com/follow-haskellers/follow-haskellers.bz2).
 
 ## Configuration

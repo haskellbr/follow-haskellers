@@ -4,7 +4,7 @@ docker-image:
 	bzip2 -d follow-haskellers.bz2
 	chmod +x follow-haskellers
 	docker build -t haskellbr/follow-haskellers:`git rev-parse HEAD` .
-	docker tag haskellbr/follow-haskellers:`git rev-parse HEAD` haskellbr/follow-haskellers:latest
+	docker tag -f haskellbr/follow-haskellers:`git rev-parse HEAD` haskellbr/follow-haskellers:latest
 
 docker-push-image:
 	docker push haskellbr/follow-haskellers:`git rev-parse HEAD`

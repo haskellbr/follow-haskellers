@@ -50,5 +50,12 @@ To push it run:
 $ make docker-push-image
 ```
 
+### Caveats for running the service in a container
+The container is so small it has no SSL certificates. You should share the
+host's certificates with the continer:
+```
+$ docker run -v /usr/share/ca-certificates:/usr/share/ca-certificates -v /etc/ssl/certs:/etc/ssl/certs -it haskellbr/follow-haskellers
+```
+
 ## License
 This code is published under the MIT license.

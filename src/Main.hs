@@ -12,7 +12,6 @@ import           Data.Conduit
 import qualified Data.Conduit.List            as Conduit.List
 import           Data.Default
 import           Data.List.Utils
-import           Data.Monoid
 import           Data.Text                    (Text)
 import qualified Data.Text                    as Text
 import           Network

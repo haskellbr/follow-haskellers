@@ -39,7 +39,7 @@ main = start `catch` \(SomeException e) -> do
         twInfo <- twitterInfoFromEnv
         _ <- forkIO $ forever $ do
             putStrLn "[info] I'm alive"
-            threadDelay (1000 * 1000 * 10)
+            threadDelay (1000 * 1000 * 60 * 60)
         runResourceT $ do
             haskellersStream <- stream twInfo mgr
                 (statusesFilterByTrack track & language .~ Just "pt")

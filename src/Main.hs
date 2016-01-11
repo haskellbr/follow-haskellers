@@ -1,9 +1,10 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Main where
 
+import           Control.Concurrent
 import           Control.Exception
 import           Control.Lens
-import           Control.Monad                (void, when)
+import           Control.Monad                (forever, void, when)
 import           Control.Monad.IO.Class
 import           Control.Monad.Trans.Resource
 import qualified Data.ByteString.Char8        as ByteString (pack)
@@ -36,10 +37,13 @@ main = start `catch` \(SomeException e) -> do
     start = withSocketsDo $ do
         mgr <- newManager tlsManagerSettings
         twInfo <- twitterInfoFromEnv
+        _ <- forkIO $ forever $ do
+            putStrLn "[info] I'm alive"
+            threadDelay (1000 * 1000 * 10)
         runResourceT $ do
             haskellersStream <- stream twInfo mgr
                 (statusesFilterByTrack track & language .~ Just "pt")
-            liftIO $ putStrLn $ "[info] Started listening to tweets with"
+            liftIO $ putStrLn "[info] Started listening to tweets"
             haskellersStream $$+- Conduit.List.mapM_ (handleEvent twInfo mgr)
 
 handleEvent :: MonadResource m => TWInfo -> Manager -> StreamingAPI -> m ()
